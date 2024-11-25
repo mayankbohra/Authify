@@ -3,7 +3,7 @@ import crypto from "crypto";
 
 import { User } from "../models/user.model.js";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
-import { sendVerificationEmail, sendWelcomeEmail, sendResetPasswordEmail } from "../mailtrap/email.js";
+import { sendVerificationEmail, sendWelcomeEmail, sendResetPasswordEmail, sendResetSuccessEmail } from "../mailtrap/email.js";
 
 export const signup = async (req, res) => {
     const { email, password, name } = req.body;
@@ -129,16 +129,49 @@ export const forgotPassword = async (req, res) => {
         }
 
         const resetToken = crypto.randomBytes(20).toString("hex");
-        user.resetToken = resetToken;
-        user.resetTokenExpiresAt = Date.now() + 24 * 60 * 60 * 1000;    // expires in 24 hours
+		const resetTokenExpiresAt = Date.now() + 1 * 60 * 60 * 1000; // 1 hour
 
-        await user.save();
+		user.resetPasswordToken = resetToken;
+		user.resetPasswordExpiresAt = resetTokenExpiresAt;
+
+		await user.save();
         await sendResetPasswordEmail(user.email, `${process.env.CLIENT_URL}/reset-password/${resetToken}`);
 
         res.status(200).json({ success: true, message: "Reset token sent to email" });
-
     } catch (error) {
         console.error("Error forgetting password: ", error);
+        res.status(400).json({ success: false, message: error.message });
+    }
+};
+
+export const resetPassword = async (req, res) => {
+    try {
+        const { token } = req.params;
+        const { password } = req.body;
+
+        const user = await User.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpiresAt: { $gt: Date.now() },
+        });
+        console.log(user);
+        console.log(token);
+
+        if (!user) {
+            return res.status(400).json({ success: false, message: "Invalid or expired reset token" });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 12);
+        user.password = hashedPassword;
+
+        user.resetToken = undefined;
+        user.resetTokenExpiresAt = undefined;
+
+        await user.save();
+        sendResetSuccessEmail(user.email);
+
+        res.status(200).json({ success: true, message: "Password reset successfully" });
+    } catch (error) {
+        console.error("Error resetting password: ", error);
         res.status(400).json({ success: false, message: error.message });
     }
 };
