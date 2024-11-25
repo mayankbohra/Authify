@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from 'react-hot-toast';
 import { useEffect } from 'react';
 
@@ -6,6 +6,7 @@ import FloatingShape from './components/FloatingShape';
 import SignUpPage from './pages/SignUpPage';
 import LoginPage from './pages/LoginPage';
 import EmailVerificationPage from './pages/EmailVerificationPage';
+import DashboardPage from './pages/DashboardPage';
 import { useAuthStore } from './store/authStore';
 
 
