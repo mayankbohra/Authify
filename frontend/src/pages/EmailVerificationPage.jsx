@@ -1,27 +1,20 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 
 const EmailVerificationPage = () => {
     const [code, setCode] = useState(["", "", "", "", "", ""]);
     const inputRefs = useRef([]);
+
     const isLoading = false;
 
     const handleChange = (index, value) => {
         const newCode = [...code];
 
-        if (value.length > 1) {
-            const pastedCode = value.slice(0, 6).split("");
-            for (let i = 0; i < 6; i++) {
-                newCode[i] = pastedCode[i] || "";
-            }
-            setCode(newCode);
-            const lastFilledIndex = newCode.findLastIndex((digit) => digit !== "");
-            const focusIndex = lastFilledIndex < 5 ? lastFilledIndex + 1 : 5;
-            inputRefs.current[focusIndex].focus();
-        } else {
+        if (value.length === 1) {
             newCode[index] = value;
             setCode(newCode);
-            if (value && index < 5) {
+
+            if (index < 5 && value) {
                 inputRefs.current[index + 1].focus();
             }
         }
@@ -33,17 +26,27 @@ const EmailVerificationPage = () => {
         }
     };
 
+    const handlePaste = (e) => {
+        e.preventDefault();
+        const pasteData = e.clipboardData.getData("text").slice(0, 6);
+        const newCode = [...code];
+        pasteData.split("").forEach((char, index) => {
+            newCode[index] = char || "";
+        });
+        setCode(newCode);
+
+        // Automatically focus the next input field after the last filled one
+        const lastFilledIndex = pasteData.length - 1;
+        if (lastFilledIndex < 5) {
+            inputRefs.current[lastFilledIndex + 1]?.focus();
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const verificationCode = code.join("");
         alert(`Verification code: ${verificationCode}`);
     };
-
-    useEffect(() => {
-        if (code.every((digit) => digit !== "")) {
-            handleSubmit(new Event("submit"));
-        }
-    }, [code]);
 
     return (
         <motion.div
@@ -71,6 +74,7 @@ const EmailVerificationPage = () => {
                                 value={digit}
                                 onChange={(e) => handleChange(index, e.target.value)}
                                 onKeyDown={(e) => handleKeyDown(index, e)}
+                                onPaste={index === 0 ? handlePaste : null} // Handle paste only on the first input
                                 className="w-12 h-12 text-center text-2xl font-bold bg-gray-700 text-white border-2 border-gray-600 rounded-lg focus:border-purple-500 focus:outline-none"
                             />
                         ))}
