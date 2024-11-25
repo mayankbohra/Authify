@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 
 import { User } from "../models/user.model.js";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
-import { sendVerificationEmail,  sendWelcomeEmail} from "../mailtrap/email.js";
+import { sendVerificationEmail, sendWelcomeEmail } from "../mailtrap/email.js";
 
 export const signup = async (req, res) => {
     const { email, password, name } = req.body;
@@ -47,7 +47,7 @@ export const signup = async (req, res) => {
 };
 
 export const verifyEmail = async (req, res) => {
-    const {code} = req.body;
+    const { code } = req.body;
 
     try {
         const user = await User.findOne({
@@ -81,7 +81,36 @@ export const verifyEmail = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-    res.send("Login Route");
+    const { email, password } = req.body;
+
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ success: false, message: "Invalid credentials" });
+        }
+
+        const isPasswordCorrect = await bcrypt.compare(password, user.password);
+        if (!isPasswordCorrect) {
+            return res.status(400).json({ success: false, message: "Invalid credentials" });
+        }
+
+        generateTokenAndSetCookie(res, user._id);
+
+        user.lastLogin = new Date();
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Logged in successfully",
+            user: {
+                ...user._doc,
+                password: undefined,
+            }
+        });
+    } catch (error) {
+        console.error("Error logging in: ", error);
+        res.status(400).json({ success: false, message: error.message });
+    }
 };
 
 export const logout = async (req, res) => {
