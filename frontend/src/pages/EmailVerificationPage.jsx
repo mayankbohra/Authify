@@ -1,11 +1,16 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
+
+import { useAuthStore } from '../store/authStore';
 
 const EmailVerificationPage = () => {
     const [code, setCode] = useState(["", "", "", "", "", ""]);
     const inputRefs = useRef([]);
+    const navigate = useNavigate();
 
-    const isLoading = false;
+    const { error, isLoading, verifyEmail } = useAuthStore();
 
     const handleChange = (index, value) => {
         const newCode = [...code];
@@ -45,7 +50,13 @@ const EmailVerificationPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const verificationCode = code.join("");
-        alert(`Verification code: ${verificationCode}`);
+        try {
+            await verifyEmail(verificationCode);
+            navigate("/");
+            toast.success("Email verified successfully");
+        } catch (error) {
+            console.log(error);
+        }
     };
 
     return (
@@ -79,6 +90,7 @@ const EmailVerificationPage = () => {
                             />
                         ))}
                     </div>
+                    {error && <p className='text-red-500 font-semibold mt-2'>{error}</p>}
                     <motion.button
                         className="w-full py-3 px-4 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white font-bold rounded-lg shadow-lg hover:from-purple-600 hover:via-pink-600 hover:to-red-600 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-200"
                         whileHover={{ scale: 1.02 }}
