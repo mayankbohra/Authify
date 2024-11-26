@@ -6,10 +6,11 @@ import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js
 import { sendVerificationEmail, sendWelcomeEmail, sendResetPasswordEmail, sendResetSuccessEmail } from "../mailtrap/email.js";
 
 export const signup = async (req, res) => {
-    const { email, password, name } = req.body;
+    const { email, password, name, role } = req.body;
 
     try {
-        if (!email || !password || !name) {
+        console.log(email, " ", password, " ", name, " ", role);
+        if (!email || !password || !name || !role) {
             throw new Error("All fields are required");
         }
 
@@ -25,6 +26,7 @@ export const signup = async (req, res) => {
             name,
             email,
             password: hashedPassword,
+            role,
             verificationToken,
             verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
         });

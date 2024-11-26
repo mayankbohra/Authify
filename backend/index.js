@@ -5,6 +5,7 @@ import cors from 'cors';
 
 import connectDB from './db/connectdb.js';
 import authRoutes from './routes/auth.route.js';
+import userRoutes from './routes/user.route.js';
 
 dotenv.config();
 const app = express();
@@ -16,6 +17,7 @@ app.use(express.json());        // Parse JSON bodies in the request object and m
 app.use(cookieParser());        // Parse Cookie header and populate req.cookies with an object keyed by the cookie names
 
 app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
 
 app.listen(PORT, () => {
     connectDB();

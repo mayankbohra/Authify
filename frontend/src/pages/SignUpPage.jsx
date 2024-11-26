@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader, Mail, User, Lock } from 'lucide-react';
+import { Loader, Mail, User, Lock, Users } from 'lucide-react';
 
 import Input from '../components/Input';
 import PasswordStrengthMeter from "../components/PasswordStrengthMeter";
@@ -11,6 +11,7 @@ const SignUpPage = () => {
     const [name, setName] = React.useState('');
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
+    const [role, setRole] = React.useState('user'); // Default to 'user'
 
     const navigate = useNavigate();
 
@@ -20,7 +21,7 @@ const SignUpPage = () => {
         e.preventDefault();
 
         try {
-            await signup(email, password, name);
+            await signup(email, password, name, role);
             navigate('/verify-email');
         } catch (error) {
             console.error(error);
@@ -66,6 +67,23 @@ const SignUpPage = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
+
+                    {/* Improved Role selection field with gap */}
+                    <div className="relative mb-6">
+                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <Users className="size-5 text-cyan-400" />
+                        </div>
+                        <select
+                            value={role}
+                            onChange={(e) => setRole(e.target.value)}
+                            className="w-full pl-10 pr-3 py-2 bg-gray-900 bg-opacity-70 rounded-lg border border-gray-800 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400 text-white placeholder-gray-500 transition duration-200"
+                        >
+                            <option value="user">User</option>
+                            <option value="manager">Manager</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+
                     {error && <p className='text-red-500 font-semibold mt-2'>{error}</p>}
                     <PasswordStrengthMeter password={password} />
 
