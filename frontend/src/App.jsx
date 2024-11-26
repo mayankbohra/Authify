@@ -7,6 +7,7 @@ import SignUpPage from './pages/SignUpPage';
 import LoginPage from './pages/LoginPage';
 import EmailVerificationPage from './pages/EmailVerificationPage';
 import DashboardPage from './pages/DashboardPage';
+import LoadingSpinner from './components/LoadingSpinner';
 import { useAuthStore } from './store/authStore';
 
 
@@ -46,6 +47,7 @@ function App() {
     console.log("isAuthenticated: ", isAuthenticated);
     console.log("user: ", user);
 
+    if (isCheckingAuth) return <LoadingSpinner />;
     return (
         <>
             <div className='overflow-hidden min-h-screen bg-gradient-to-br from-indigo-800 via-black to-gray-900 flex items-center justify-center relative'>
