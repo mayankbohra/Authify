@@ -1,27 +1,25 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader, Mail, User, Lock, Users } from 'lucide-react';
+import { Loader, Mail, User, Lock } from 'lucide-react';
 
 import Input from '../components/Input';
-import PasswordStrengthMeter from "../components/PasswordStrengthMeter";
+import PasswordStrengthMeter from '../components/PasswordStrengthMeter';
 import { useAuthStore } from '../store/authStore';
 
-const SignUpPage = () => {
+const UserSignUpPage = () => {
     const [name, setName] = React.useState('');
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
-    const [role, setRole] = React.useState('user'); // Default to 'user'
 
     const navigate = useNavigate();
-
     const { signup, error, isLoading } = useAuthStore();
 
     const handleSignUp = async (e) => {
         e.preventDefault();
 
         try {
-            await signup(email, password, name, role);
+            await signup(email, password, name, 'user');
             navigate('/verify-email');
         } catch (error) {
             console.error(error);
@@ -37,7 +35,7 @@ const SignUpPage = () => {
         >
             <div className="p-8 bg-gradient-to-br from-gray-800 via-gray-900 to-gray-700">
                 <h2 className="text-3xl font-bold mb-6 text-center bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 text-transparent bg-clip-text">
-                    Create Account
+                    User Signup
                 </h2>
 
                 <form onSubmit={handleSignUp}>
@@ -68,22 +66,6 @@ const SignUpPage = () => {
                         required
                     />
 
-                    {/* Improved Role selection field with gap */}
-                    <div className="relative mb-6">
-                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <Users className="size-5 text-cyan-400" />
-                        </div>
-                        <select
-                            value={role}
-                            onChange={(e) => setRole(e.target.value)}
-                            className="w-full pl-10 pr-3 py-2 bg-gray-900 bg-opacity-70 rounded-lg border border-gray-800 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400 text-white placeholder-gray-500 transition duration-200"
-                        >
-                            <option value="user">User</option>
-                            <option value="manager">Manager</option>
-                            <option value="admin">Admin</option>
-                        </select>
-                    </div>
-
                     {error && <p className='text-red-500 font-semibold mt-2'>{error}</p>}
                     <PasswordStrengthMeter password={password} />
 
@@ -94,7 +76,7 @@ const SignUpPage = () => {
                         type='submit'
                         disabled={isLoading}
                     >
-                        {isLoading ? <Loader className=' animate-spin mx-auto' size={24} /> : "Sign Up"}
+                        {isLoading ? <Loader className='animate-spin mx-auto' size={24} /> : "Sign Up"}
                     </motion.button>
                 </form>
             </div>
@@ -110,4 +92,4 @@ const SignUpPage = () => {
     );
 };
 
-export default SignUpPage;
+export default UserSignUpPage;

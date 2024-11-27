@@ -1,12 +1,15 @@
 // Dashboard.jsx
 import React from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+
 import { useAuthStore } from "../store/authStore";
 import { useUserStore } from "../store/userStore";
 
 const DashboardPage = () => {
     const { user, logout } = useAuthStore();
     const { users, managers, isLoading, error, fetchUsers, fetchManagers, deleteUser } = useUserStore();
+    const navigate = useNavigate();
 
     const handleLogout = () => {
         logout();
@@ -113,6 +116,24 @@ const DashboardPage = () => {
                     </motion.div>
                 )}
             </div>
+
+            {user.role === "admin" && (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="mt-4"
+                >
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => navigate("/admin-panel")}
+                        className="w-full py-3 px-4 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white font-bold rounded-lg shadow-lg hover:from-purple-600 hover:to-red-600 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+                    >
+                        Manage Admins & Managers
+                    </motion.button>
+                </motion.div>
+            )}
 
             <motion.div
                 initial={{ opacity: 0, y: 20 }}

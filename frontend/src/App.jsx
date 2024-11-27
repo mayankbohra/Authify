@@ -3,7 +3,8 @@ import { Toaster } from 'react-hot-toast';
 import { useEffect } from 'react';
 
 import FloatingShape from './components/FloatingShape';
-import SignUpPage from './pages/SignUpPage';
+import UserSignUpPage from './pages/UserSignUpPage';
+import AdminPanelPage from './pages/AdminPanelPage';
 import LoginPage from './pages/LoginPage';
 import EmailVerificationPage from './pages/EmailVerificationPage';
 import DashboardPage from './pages/DashboardPage';
@@ -43,6 +44,17 @@ const RedirectAuthenticatedUser = ({ children }) => {
     return children;
 };
 
+// protect routes that require admin role
+const AdminGuard = ({ children }) => {
+    const { user } = useAuthStore();
+
+    if (!user || user.role !== 'admin') {
+        return <Navigate to="/login" />;
+    }
+
+    return children;
+};
+
 function App() {
     const { isCheckingAuth, checkAuth } = useAuthStore();
 
@@ -70,9 +82,17 @@ function App() {
                         path='/signup'
                         element={
                             <RedirectAuthenticatedUser>
-                                <SignUpPage />
+                                <UserSignUpPage />
                             </RedirectAuthenticatedUser>
                         } />
+                    <Route
+                        path="/admin-panel"
+                        element={
+                            <AdminGuard>
+                                <AdminPanelPage />
+                            </AdminGuard>
+                        }
+                    />
                     <Route
                         path='/login'
                         element={
