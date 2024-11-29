@@ -1,5 +1,4 @@
-// Dashboard.jsx
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
@@ -10,6 +9,9 @@ const DashboardPage = () => {
     const { user, logout } = useAuthStore();
     const { users, managers, isLoading, error, fetchUsers, fetchManagers, deleteUser } = useUserStore();
     const navigate = useNavigate();
+
+    // State for search query
+    const [searchQuery, setSearchQuery] = useState("");
 
     const handleLogout = () => {
         logout();
@@ -23,6 +25,16 @@ const DashboardPage = () => {
             fetchManagers();
         }
     }, [user]);
+
+    // Filtered users/managers based on the search query
+    const filteredData =
+        user.role === "admin"
+            ? users.filter((userData) =>
+                  userData.name.toLowerCase().includes(searchQuery.toLowerCase())
+              )
+            : managers.filter((managerData) =>
+                  managerData.name.toLowerCase().includes(searchQuery.toLowerCase())
+              );
 
     return (
         <motion.div
@@ -60,6 +72,18 @@ const DashboardPage = () => {
                         <h3 className="text-2xl font-semibold text-gradient bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 mb-3">
                             {user.role === "admin" ? "All Users" : "Managers & Users"}
                         </h3>
+
+                        {/* Search Bar */}
+                        <div className="mb-4">
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search by name..."
+                                className="w-full p-2 bg-gray-800 text-gray-300 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            />
+                        </div>
+
                         {isLoading ? (
                             <p className="text-gray-300">Loading...</p>
                         ) : error ? (
@@ -76,7 +100,7 @@ const DashboardPage = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {(user.role === "admin" ? users : managers).map((userData) => (
+                                        {filteredData.map((userData) => (
                                             <tr key={userData._id} className="border-b border-gray-700 hover:bg-gray-700">
                                                 <td className="px-4 py-2 text-gray-300">{userData.name}</td>
                                                 <td className="px-4 py-2 text-gray-300">{userData.email}</td>
@@ -112,7 +136,6 @@ const DashboardPage = () => {
                         <p className="text-gray-200">Welcome, <span className="font-semibold">{user.name}</span>!</p>
                         <p className="text-gray-200">Role: <span className="font-semibold">{user.role}</span></p>
                         <p className="text-gray-200">Email: <span className="font-semibold">{user.email}</span></p>
-                        {/* You can add any user-specific data or actions here */}
                     </motion.div>
                 )}
             </div>
