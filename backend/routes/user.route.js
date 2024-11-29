@@ -44,6 +44,42 @@ router.delete("/admin/delete/:id", verifyToken, checkRole("admin"), async (req, 
     }
 });
 
+// Admin - Edit user details
+router.put("/admin/edit/:id", verifyToken, checkRole("admin"), async (req, res) => {
+    const { id } = req.params;
+    const { name, email, role } = req.body;
+
+    try {
+        // Validate input
+        if (!name && !email && !role) {
+            return res.status(400).json({
+                success: false,
+                message: "At least one field (name, email, role) must be provided for update",
+            });
+        }
+
+        // Find the user and update the details
+        const updatedUser = await User.findByIdAndUpdate(
+            id,
+            { ...(name && { name }), ...(email && { email }), ...(role && { role }) },
+            { new: true, runValidators: true } // Return the updated document and validate fields
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        res.json({
+            success: true,
+            message: `User ${updatedUser.name} updated successfully`,
+            data: updatedUser,
+        });
+    } catch (error) {
+        console.error("Error updating user:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+});
+
 // Manager - Fetch managers and users
 router.get("/manager/dashboard", verifyToken, checkRole("manager"), async (req, res) => {
     try {

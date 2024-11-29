@@ -57,4 +57,23 @@ export const useUserStore = create((set) => ({
             set({ error: error.response?.data?.message || "Error deleting user", isLoading: false });
         }
     },
+
+    editUser: async (id, updates) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await axios.put(`${API_URL}/admin/edit/${id}`, updates);
+            set((state) => ({
+                users: state.users.map((user) =>
+                    user._id === id ? { ...user, ...response.data.data } : user
+                ),
+                managers: state.managers.map((manager) =>
+                    manager._id === id ? { ...manager, ...response.data.data } : manager
+                ),
+                isLoading: false,
+                message: "User updated successfully",
+            }));
+        } catch (error) {
+            set({ error: error.response?.data?.message || "Error updating user", isLoading: false });
+        }
+    },
 }));

@@ -7,11 +7,13 @@ import { useUserStore } from "../store/userStore";
 
 const DashboardPage = () => {
     const { user, logout } = useAuthStore();
-    const { users, managers, isLoading, error, fetchUsers, fetchManagers, deleteUser } = useUserStore();
+    const { users, managers, isLoading, error, fetchUsers, fetchManagers, deleteUser, editUser } = useUserStore();
     const navigate = useNavigate();
 
     // State for search query
     const [searchQuery, setSearchQuery] = useState("");
+    const [editingUserId, setEditingUserId] = useState(null);
+    const [editedUserData, setEditedUserData] = useState({});
 
     const handleLogout = () => {
         logout();
@@ -26,15 +28,33 @@ const DashboardPage = () => {
         }
     }, [user]);
 
-    // Filtered users/managers based on the search query
+    // Filter users/managers based on the search query
     const filteredData =
         user.role === "admin"
             ? users.filter((userData) =>
-                  userData.name.toLowerCase().includes(searchQuery.toLowerCase())
-              )
+                userData.name.toLowerCase().includes(searchQuery.toLowerCase())
+            )
             : managers.filter((managerData) =>
-                  managerData.name.toLowerCase().includes(searchQuery.toLowerCase())
-              );
+                managerData.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+
+    // Handle edit button click
+    const handleEdit = (userData) => {
+        setEditingUserId(userData._id);
+        setEditedUserData({ ...userData });
+    };
+
+    // Handle cancel edit action
+    const handleCancel = () => {
+        setEditingUserId(null);
+        setEditedUserData({});
+    };
+
+    // Handle update action
+    const handleUpdate = () => {
+        editUser(editingUserId, editedUserData);
+        setEditingUserId(null);
+    };
 
     return (
         <motion.div
@@ -101,18 +121,79 @@ const DashboardPage = () => {
                                     </thead>
                                     <tbody>
                                         {filteredData.map((userData) => (
-                                            <tr key={userData._id} className="border-b border-gray-700 hover:bg-gray-700">
-                                                <td className="px-4 py-2 text-gray-300">{userData.name}</td>
-                                                <td className="px-4 py-2 text-gray-300">{userData.email}</td>
-                                                <td className="px-4 py-2 text-gray-300">{userData.role}</td>
+                                            <tr key={userData._id} className="border-b border-gray-700 ">
+                                                <td className="px-4 py-2 text-gray-300">
+                                                    {editingUserId === userData._id ? (
+                                                        <input
+                                                            type="text"
+                                                            value={editedUserData.name}
+                                                            onChange={(e) => setEditedUserData({ ...editedUserData, name: e.target.value })}
+                                                            className="bg-gray-700 text-gray-300 px-2 py-1 rounded-md"
+                                                        />
+                                                    ) : (
+                                                        userData.name
+                                                    )}
+                                                </td>
+                                                <td className="px-4 py-2 text-gray-300">
+                                                    {editingUserId === userData._id ? (
+                                                        <input
+                                                            type="email"
+                                                            value={editedUserData.email}
+                                                            onChange={(e) => setEditedUserData({ ...editedUserData, email: e.target.value })}
+                                                            className="bg-gray-700 text-gray-300 px-2 py-1 rounded-md"
+                                                        />
+                                                    ) : (
+                                                        userData.email
+                                                    )}
+                                                </td>
+                                                <td className="px-4 py-2 text-gray-300">
+                                                    {editingUserId === userData._id ? (
+                                                        <select
+                                                            value={editedUserData.role}
+                                                            onChange={(e) => setEditedUserData({ ...editedUserData, role: e.target.value })}
+                                                            className="bg-gray-700 text-gray-300 px-2 py-1 rounded-md"
+                                                        >
+                                                            <option value="admin">Admin</option>
+                                                            <option value="manager">Manager</option>
+                                                            <option value="user">User</option>
+                                                        </select>
+                                                    ) : (
+                                                        userData.role
+                                                    )}
+                                                </td>
                                                 {user.role === "admin" && (
                                                     <td className="px-4 py-2">
-                                                        <button
-                                                            onClick={() => deleteUser(userData._id)}
-                                                            className="text-red-500 hover:text-red-700 font-semibold"
-                                                        >
-                                                            Delete
-                                                        </button>
+                                                        {editingUserId === userData._id ? (
+                                                            <>
+                                                                <button
+                                                                    onClick={handleUpdate}
+                                                                    className="text-green-500 hover:text-green-700 font-semibold mr-2"
+                                                                >
+                                                                    Update
+                                                                </button>
+                                                                <button
+                                                                    onClick={handleCancel}
+                                                                    className="text-gray-500 hover:text-gray-700 font-semibold"
+                                                                >
+                                                                    Cancel
+                                                                </button>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => handleEdit(userData)}
+                                                                    className="text-yellow-500 hover:text-yellow-700 font-semibold mr-2"
+                                                                >
+                                                                    Edit
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => deleteUser(userData._id)}
+                                                                    className="text-red-500 hover:text-red-700 font-semibold"
+                                                                >
+                                                                    Delete
+                                                                </button>
+                                                            </>
+                                                        )}
                                                     </td>
                                                 )}
                                             </tr>
